@@ -204,6 +204,132 @@ from 학생
 where 학번 like '16%';
 
 -- 38
+select 수.수강신청번호, 수.학번, 수.날짜
+from 수강신청 수, 학생 학, 학과 과
+where 과.학과번호 not in ('01') and
+수.학번 = 학.학번 and 학.학과 = 과.학과번호;
+
+-- 39 ??
 select 수강신청번호, 학번, 날짜
 from 수강신청
-where 
+where 날짜=date_format('201803','%Y-%m-%d');
+
+-- 40 ??
+select 수강신청번호, 학번, 날짜,
+IF(평점>0, 취득, 미취득) AS 취득여부
+from 수강신청내역
+where 평점 not in ('-1');
+
+-- 41 
+select concat(이름,'(',시도,')') as 이름
+from 학생;
+
+-- 42
+select 담당교수, concat(과목명, '(', 영문명, ')') as 과목명 
+from 과목;
+
+-- 43
+select 과목명, 학점, (시수*15) 총시간수
+from 과목;
+
+-- 44
+select 학번, substr(이름,2) 이름
+from 학생;
+
+-- 45 ??
+select 학번, 날짜
+from 수강신청
+where 날짜=date_format('03-01','%m-%d');
+
+-- 46 ??
+select 생.학번, 생.이름, 생.학과, 과.학과명
+from 학생 생, 학과 과
+where 생.학과 = 과.학과번호;
+
+-- 47
+select count(*) as 신청수 from 수강신청내역;
+
+-- 48
+select count(*) as 과목수
+from 수강신청내역
+where 수강신청번호 = 1810002;
+
+-- 49
+select count(*) as '교수 수'
+from 교수
+where 전화번호 is not null;
+
+-- 50
+select count(DISTINCT 담당교수) as '강의 교수 수'
+from 과목;
+
+-- 51
+select avg(학점) '평균학점', sum(학점) '총학점'
+from 과목;
+
+-- 52
+select min(학점) '최소학점', max(학점) '최대학점'
+from 과목;
+
+-- 53 ??
+select DISTINCT 담당교수
+from 과목;
+
+-- 54
+select count(DISTINCT 과목번호) as '과목 수'
+from 수강신청내역;
+
+-- 55
+select count(DISTINCT 학번) as '학생 수'
+from 수강신청;
+
+-- 56
+select count(DISTINCT 과목번호) as '과목수', avg(평점) '평균평점'
+from 수강신청내역
+where 수강신청번호 = '1810001';
+
+-- 57 
+select 과목번호, count(수강신청번호) as '수강자 수'
+from 수강신청내역
+group by 과목번호;
+
+-- 58
+select 과목번호, count(수강신청번호) as '수강자 수'
+from 수강신청내역
+where 평점 not in(-1)
+group by 과목번호;
+
+-- 59
+select 과목번호, count(수강신청번호) as '수강자 수', avg(평점) '평균평점'
+from 수강신청내역
+where 평점 not in(-1)
+group by 과목번호;
+
+-- 60
+select 과목번호, count(수강신청번호) as '수강자 수', avg(평점) '평균평점'
+from 수강신청내역
+where 평점 not in(-1) 
+group by 과목번호
+having count(수강신청번호)>3;
+
+-- 61
+select 과목번호, count(수강신청번호) as '수강자 수', avg(평점) '평균평점'
+from 수강신청내역
+where 평점 not in(-1) 
+group by 과목번호
+having count(수강신청번호)>3
+order by avg(평점);
+
+-- 62 ??
+select 수강신청번호, count(과목번호) as '수강과목 수', avg(평점) '평균평점'
+from 수강신청내역
+group by 수강신청번호
+having count(과목번호)>3
+order by avg(평점) desc;
+
+
+-- 76
+select 수.학번, 학.이름, 
+from 수강신청 수, 수강신청내역 내, 과목 과
+where 수.수강신청번호 = 내.수강신청번호 and
+수.학기 = 1;
