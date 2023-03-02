@@ -179,8 +179,8 @@ select 학번, 학과, 이름, 시도
 from 학생
 where 이름 like '%서%';
 
--- 33 ??
-select (이름, 주소, 시군구, 시도, 우편번호) as '학생정보'
+-- 33 
+select concat(이름,'(', 주소, ' ', 시군구, 시도, 우편번호, ')') as '학생정보'
 from 학생
 order by 이름;
 
@@ -189,19 +189,22 @@ select 과목명, 담당교수 as '담당교수사번'
 from 과목;
 
 -- 35
-select 수강신청번호, concat(연도,'학년도-',학기,'학기')
+select 수강신청번호, concat(연도,'학년도-',학기,'학기') as 신청학년도
 from 수강신청
 where 학번 = 1801001;
 
 -- 36
 -- substring( ... , position, length)
-select 학번, 이름, substring(이름, 1, 1) as 이
+select 학번, 이름, substring(이름, 1, 1) as 성
+from 학생;
+
+select 학번, 이름, left(이름, 1) as 성
 from 학생;
 
 -- 37
 select 학번, 이름, 학년
 from 학생
-where 학번 like '16%';
+where left(학번,2) like '16';
 
 -- 38
 select 수.수강신청번호, 수.학번, 수.날짜
@@ -209,16 +212,27 @@ from 수강신청 수, 학생 학, 학과 과
 where 과.학과번호 not in ('01') and
 수.학번 = 학.학번 and 학.학과 = 과.학과번호;
 
--- 39 ??
+select 수.수강신청번호, 수.학번, 수.날짜
+from 수강신청 수, 학생 학, 학과 과
+where 과.학과명 <> '컴퓨터정보학과' and
+수.학번 = 학.학번 and 학.학과 = 과.학과번호;
+
+-- 39 
 select 수강신청번호, 학번, 날짜
 from 수강신청
-where 날짜=date_format('201803','%Y-%m-%d');
+where year(날짜)=2018 and month(날짜)=03;
 
--- 40 ??
+-- 40 
+-- 제어문
 select 수강신청번호, 학번, 날짜,
 IF(평점>0, 취득, 미취득) AS 취득여부
 from 수강신청내역
 where 평점 not in ('-1');
+
+-- if(조건, 조건이 참일 때 출력, 조건이 거짓일 때 출력)
+select 수강신청번호, 과목번호, 평점, if (평점=0, '미취득', '취득') as 취득여부
+from 수강신청내역
+where 평점 <> -1;
 
 -- 41 
 select concat(이름,'(',시도,')') as 이름
@@ -236,13 +250,17 @@ from 과목;
 select 학번, substr(이름,2) 이름
 from 학생;
 
--- 45 ??
+select 학번, right(이름,2) 이름
+from 학생;
+
+-- 45 
 select 학번, 날짜
 from 수강신청
-where 날짜=date_format('03-01','%m-%d');
+where month(날짜)=3 and day(날짜)=1;
 
--- 46 ??
-select 생.학번, 생.이름, 생.학과, 과.학과명
+-- 46 
+-- if(조건, 조건이 참이면, 조건이 거짓이면)
+select 생.학번, 생.이름, 생.학과, if(과.학과명='컴퓨터정보학과','컴퓨터정보학과','타과')as 비고
 from 학생 생, 학과 과
 where 생.학과 = 과.학과번호;
 
@@ -252,7 +270,7 @@ select count(*) as 신청수 from 수강신청내역;
 -- 48
 select count(*) as 과목수
 from 수강신청내역
-where 수강신청번호 = 1810002;
+where 수강신청번호 = '1810002';
 
 -- 49
 select count(*) as '교수 수'
@@ -271,9 +289,11 @@ from 과목;
 select min(학점) '최소학점', max(학점) '최대학점'
 from 과목;
 
--- 53 ??
-select DISTINCT 담당교수
-from 과목;
+-- 53 
+-- ~별 -> group by
+select 담당교수, count(과목명) as 과목수, sum(학점) as 학점수
+from 과목
+group by 담당교수;
 
 -- 54
 select count(DISTINCT 과목번호) as '과목 수'
@@ -284,7 +304,7 @@ select count(DISTINCT 학번) as '학생 수'
 from 수강신청;
 
 -- 56
-select count(DISTINCT 과목번호) as '과목수', avg(평점) '평균평점'
+select count(과목번호) as '과목수', avg(평점) '평균평점'
 from 수강신청내역
 where 수강신청번호 = '1810001';
 
@@ -297,6 +317,7 @@ group by 과목번호;
 select 과목번호, count(수강신청번호) as '수강자 수'
 from 수강신청내역
 where 평점 not in(-1)
+-- where 평점 <> -1
 group by 과목번호;
 
 -- 59
@@ -317,19 +338,74 @@ select 과목번호, count(수강신청번호) as '수강자 수', avg(평점) '
 from 수강신청내역
 where 평점 not in(-1) 
 group by 과목번호
-having count(수강신청번호)>3
+having count(*)>3
 order by avg(평점);
 
--- 62 ??
-select 수강신청번호, count(과목번호) as '수강과목 수', avg(평점) '평균평점'
+-- 62 
+select 수강신청번호, count(*) as '수강과목 수', avg(평점) '평균평점'
 from 수강신청내역
+where 평점 <> -1
 group by 수강신청번호
-having count(과목번호)>3
-order by avg(평점) desc;
+having count(*) >= 3
+order by 평균평점 desc;
 
+-- 63
+-- 유일한 항목이면 학과.학과명 이렇게 안써도 됌
+select 학번, 학과, 이름, 학과명
+from 학생, 학과
+where 학생.학과 = 학과.학과번호;
+
+-- 64
+-- 71과 동일
+select 
+from
+where
+
+-- 65 
+select 수강신청번호, 학생.학번, 이름
+from 수강신청, 학생
+where 수강신청.학번 = 학생.학번 
+and year(날짜)=2018;
+
+-- 66
+-- 67과 중복
+select 수강신청.수강신청번호, 수강신청내역.과목번호, 과목명
+from 수강신청, 수강신청내역, 과목
+where 수강신청.수강신청번호 = 수강신청내역.수강신청번호 and 수강신청내역.과목번호=과목.과목번호
+and 학번 = '1801001';
+
+-- 68
+select count(*) as 과목수, sum(평점) as 평점합계
+from 수강신청, 수강신청내역, 과목
+where 수강신청.수강신청번호 = 수강신청내역.수강신청번호 and 수강신청내역.과목번호=과목.과목번호
+and 학번 = '1801001';
+
+-- 69
+-- ~별로 -> group by
+select 수강신청.수강신청번호, 수강신청.학번, 이름, sum(평점)/count(수강신청내역.과목번호) as 평균평점
+from 학생, 수강신청, 수강신청내역, 과목
+where 학생.학번= 수강신청.학번 and 수강신청.수강신청번호 = 수강신청내역.수강신청번호 
+and 수강신청내역.과목번호 = 과목.과목번호 and 평점<>-1
+group by 수강신청.수강신청번호;
+
+-- 70. 72. 73 중복
+-- 71
+select 수강신청번호, 과목.과목번호, 과목.과목명
+from 수강신청내역, 과목
+where 수강신청내역.과목번호 = 과목.과목번호 and 수강신청번호 in ('1810001', '1610001');
+
+-- 74
+-- 서브쿼리
+-- 사번이 1000004인 학과를 먼저 찾고나서 다시 질의
+select 사번, 학과, 이름
+from 교수
+where 학과 = (select 학과
+from 교수
+where 사번='1000004');
 
 -- 76
-select 수.학번, 학.이름, 
-from 수강신청 수, 수강신청내역 내, 과목 과
-where 수.수강신청번호 = 내.수강신청번호 and
-수.학기 = 1;
+-- ~별로 -> group by
+select 과목.과목번호, 과목명, count(*)as 수강인원, avg(평점) as 평균평점
+from 과목, 수강신청내역
+where 과목.과목번호 = 수강신청내역.과목번호 and 학기 = '1'
+group by 과목.과목번호;
