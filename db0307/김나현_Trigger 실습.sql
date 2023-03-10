@@ -4,11 +4,8 @@ CREATE TRIGGER beforeInsert판매
 AFTER INSERT ON 판매 FOR EACH ROW
 BEGIN
 	UPDATE 상품
-	if 재고수량-판매수량>0
-		SET 재고수량 = 재고수량 - old.판매수량
-    else
-		
-	WHERE 상품코드 = OLD.상품코드;
+		SET 재고수량 = 재고수량 - new.판매수량
+	WHERE 상품코드 = new.상품코드;
 END;
 //
 delimiter ;
@@ -18,7 +15,9 @@ delimiter //
 CREATE TRIGGER beforeUpdate판매
 AFTER UPDATE ON 판매 FOR EACH ROW
 BEGIN
-	
+	UPDATE 상품
+		SET 재고수량 = 재고수량 +old.판매수량 - new.판매수량
+	WHERE 상품코드 = new.상품코드;
 END;
 //
 delimiter ;
